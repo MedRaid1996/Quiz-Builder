@@ -85,19 +85,19 @@ function App() {
   // --- RENDU ---
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div className="app-container">
 
-      <h1 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-        🧠 Quiz Builder
-      </h1>
+      <div className="app-titre">
+        <h1>🧠 Quiz Builder</h1>
+        <p>Crée, joue et corrige tes questionnaires</p>
+      </div>
 
-      {/* Barre de navigation entre les vues */}
-      <nav style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', justifyContent: 'center' }}>
-        <button onClick={() => setCurrentView('create')}>
+      <nav className="nav-barre">
+        <button className="nav-bouton" onClick={() => setCurrentView('create')}>
           ✏️ Créer
         </button>
-        {/* Le bouton Jouer est désactivé s'il n'y a aucune question */}
         <button
+          className="nav-bouton"
           onClick={startQuiz}
           disabled={questions.length === 0}
         >
@@ -105,53 +105,35 @@ function App() {
         </button>
       </nav>
 
-      {/* Vue Création : formulaire titre + formulaire question + liste */}
       {currentView === 'create' && (
         <div>
-          <QuizForm
-            quizTitle={quizTitle}
-            setQuizTitle={setQuizTitle}
-          />
+          <QuizForm quizTitle={quizTitle} setQuizTitle={setQuizTitle} />
 
-          {/* Bouton switch entre les deux versions de formulaire */}
-          <div style={styles.switchContainer}>
-            <span style={styles.switchLabel}>Version du formulaire :</span>
+          <div className="switch-container">
+            <span className="switch-label">Version du formulaire :</span>
             <button
+              className={`switch-bouton ${!utiliserRHF ? 'actif-state' : ''}`}
               onClick={() => setUtiliserRHF(false)}
-              style={{
-                ...styles.switchBouton,
-                backgroundColor: !utiliserRHF ? '#4f46e5' : '#f3f4f6',
-                color: !utiliserRHF ? '#fff' : '#333',
-              }}
             >
               useState classique
             </button>
             <button
+              className={`switch-bouton ${utiliserRHF ? 'actif-rhf' : ''}`}
               onClick={() => setUtiliserRHF(true)}
-              style={{
-                ...styles.switchBouton,
-                backgroundColor: utiliserRHF ? '#b45309' : '#f3f4f6',
-                color: utiliserRHF ? '#fff' : '#333',
-              }}
             >
               react-hook-form
             </button>
           </div>
 
-          {/* Affiche la version sélectionnée */}
           {utiliserRHF
             ? <QuestionFormRHF addQuestion={addQuestion} />
             : <QuestionForm addQuestion={addQuestion} />
           }
 
-          <QuestionList
-            questions={questions}
-            deleteQuestion={deleteQuestion}
-          />
+          <QuestionList questions={questions} deleteQuestion={deleteQuestion} />
         </div>
       )}
 
-      {/* Vue Jeu : le joueur répond aux questions */}
       {currentView === 'play' && (
         <QuizPlayer
           quizTitle={quizTitle}
@@ -163,7 +145,6 @@ function App() {
         />
       )}
 
-      {/* Vue Score : affichage du résultat final */}
       {currentView === 'score' && (
         <ScoreBoard
           score={score}
@@ -178,27 +159,5 @@ function App() {
   )
 }
 
-const styles = {
-  switchContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    marginBottom: '1rem',
-    flexWrap: 'wrap',
-  },
-  switchLabel: {
-    fontSize: '0.9rem',
-    fontWeight: 'bold',
-    color: '#555',
-  },
-  switchBouton: {
-    padding: '0.4rem 1rem',
-    border: '1px solid #ccc',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '0.85rem',
-  },
-}
 
 export default App
