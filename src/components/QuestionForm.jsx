@@ -2,67 +2,94 @@ import { useState } from 'react'
 
 // Composant formulaire pour ajouter une question au quiz
 // Utilise un formulaire CONTRÔLÉ avec useState
+// Les choix de réponse sont dynamiques (ajout/suppression)
 // Props : addQuestion (fonction pour ajouter la question à la liste)
 function QuestionForm({ addQuestion }) {
 
-    // State qui représente les données du formulaire
-    // Chaque champ est contrôlé par React
-    const [formData, setFormData] = useState({
-        texte: '',       // énoncé de la question
-        choixA: '',      // choix A
-        choixB: '',      // choix B
-        choixC: '',      // choix C
-        choixD: '',      // choix D
-        bonneReponse: '' // la bonne réponse parmi A, B, C, D
-    })
+    // State pour l'énoncé de la question
+    const [texte, setTexte] = useState('')
 
-    // State pour stocker les erreurs de validation
-    // { texte: '...', choixA: '...', bonneReponse: '...' }
+    // State pour la liste des choix — tableau de strings
+    // On commence avec 2 choix vides par défaut
+    const [choix, setChoix] = useState(['', ''])
+
+    // State pour l'index du choix sélectionné comme bonne réponse
+    const [bonneReponseIndex, setBonneReponseIndex] = useState('')
+
+    // State pour les erreurs de validation
     const [erreurs, setErreurs] = useState({})
 
-    // Mise à jour générique du formData quand un champ change
-    // On utilise le name du champ pour cibler la bonne propriété
-    const handleChange = (e) => {
-        const { name, value } = e.target
-        setFormData({ ...formData, [name]: value })
 
-        // On efface l'erreur du champ dès que l'utilisateur commence à taper
-        if (erreurs[name]) {
-            setErreurs({ ...erreurs, [name]: '' })
+    // --- GESTION DES CHOIX ---
+
+    // Met à jour le texte d'un choix selon son index
+    const handleChoixChange = (index, valeur) => {
+        const nouveauxChoix = [...choix]
+        nouveauxChoix[index] = valeur
+        setChoix(nouveauxChoix)
+
+        // Efface l'erreur du choix modifié
+        if (erreurs[`choix${index}`]) {
+            setErreurs({ ...erreurs, [`choix${index}`]: '' })
         }
     }
 
-    // Fonction de validation — retourne un objet d'erreurs
+    // Ajoute un nouveau choix vide à la fin de la liste
+    const ajouterChoix = () => {
+        setChoix([...choix, ''])
+    }
+
+    // Supprime un choix selon son index
+    // On ne permet pas de descendre sous 2 choix minimum
+    const supprimerChoix = (index) => {
+        if (choix.length <= 2) return
+
+        const nouveauxChoix = choix.filter((_, i) => i !== index)
+        setChoix(nouveauxChoix)
+
+        // Si la bonne réponse supprimée, on remet à vide
+        if (bonneReponseIndex === index) {
+            setBonneReponseIndex('')
+        }
+        // Si la bonne réponse était après le choix supprimé, on ajuste l'index
+        else if (bonneReponseIndex > index) {
+            setBonneReponseIndex(bonneReponseIndex - 1)
+        }
+    }
+
+
+    // --- VALIDATION ---
+
     const validerFormulaire = () => {
         const nouvellesErreurs = {}
 
-        if (formData.texte.trim() === '') {
+        // Vérification de l'énoncé
+        if (texte.trim() === '') {
             nouvellesErreurs.texte = 'L\'énoncé de la question est obligatoire.'
         }
-        if (formData.choixA.trim() === '') {
-            nouvellesErreurs.choixA = 'Le choix A est obligatoire.'
-        }
-        if (formData.choixB.trim() === '') {
-            nouvellesErreurs.choixB = 'Le choix B est obligatoire.'
-        }
-        if (formData.choixC.trim() === '') {
-            nouvellesErreurs.choixC = 'Le choix C est obligatoire.'
-        }
-        if (formData.choixD.trim() === '') {
-            nouvellesErreurs.choixD = 'Le choix D est obligatoire.'
-        }
-        if (formData.bonneReponse === '') {
+
+        // Vérification que chaque choix est rempli
+        choix.forEach((c, index) => {
+            if (c.trim() === '') {
+                nouvellesErreurs[`choix${index}`] = `Le choix ${index + 1} est obligatoire.`
+            }
+        })
+
+        // Vérification qu'une bonne réponse est sélectionnée
+        if (bonneReponseIndex === '') {
             nouvellesErreurs.bonneReponse = 'Tu dois sélectionner la bonne réponse.'
         }
 
         return nouvellesErreurs
     }
 
-    // Soumission du formulaire
+
+    // --- SOUMISSION ---
+
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        // On valide tous les champs
+        // Validation du formulaire
         const erreursDetectees = validerFormulaire()
 
         // S'il y a des erreurs, on les affiche et on arrête
@@ -71,33 +98,26 @@ function QuestionForm({ addQuestion }) {
             return
         }
 
-        // Construction de l'objet question à envoyer au parent
+        // Construction de l'objet question
         const nouvelleQuestion = {
-            texte: formData.texte.trim(),
-            choix: [
-                formData.choixA.trim(),
-                formData.choixB.trim(),
-                formData.choixC.trim(),
-                formData.choixD.trim(),
-            ],
+            texte: texte.trim(),
+            choix: choix.map((c) => c.trim()),
             // La bonne réponse est le texte du choix sélectionné
-            bonneReponse: formData[`choix${formData.bonneReponse}`].trim(),
+            bonneReponse: choix[bonneReponseIndex].trim(),
         }
 
-        // On envoie la question au composant parent (App)
+        // Envoi au composant parent
         addQuestion(nouvelleQuestion)
 
-        // On remet le formulaire à zéro après l'ajout
-        setFormData({
-            texte: '',
-            choixA: '',
-            choixB: '',
-            choixC: '',
-            choixD: '',
-            bonneReponse: '',
-        })
+        // Remise à zéro du formulaire
+        setTexte('')
+        setChoix(['', ''])
+        setBonneReponseIndex('')
         setErreurs({})
     }
+
+
+    // --- RENDU ---
 
     return (
         <div style={styles.container}>
@@ -113,77 +133,117 @@ function QuestionForm({ addQuestion }) {
                     <input
                         id="texte"
                         type="text"
-                        name="texte"
-                        value={formData.texte}
-                        onChange={handleChange}
+                        value={texte}
+                        onChange={(e) => {
+                            setTexte(e.target.value)
+                            if (erreurs.texte) setErreurs({ ...erreurs, texte: '' })
+                        }}
                         placeholder="Ex : Quel hook permet de gérer l'état ?"
                         style={{
                             ...styles.input,
                             borderColor: erreurs.texte ? 'red' : '#ccc',
                         }}
                     />
-                    {/* Affichage de l'erreur si le champ est vide */}
                     {erreurs.texte && (
                         <span style={styles.erreur}>❌ {erreurs.texte}</span>
                     )}
                 </div>
 
-                {/* Champs : les 4 choix de réponse */}
-                {['A', 'B', 'C', 'D'].map((lettre) => (
-                    <div key={lettre} style={styles.groupe}>
-                        <label htmlFor={`choix${lettre}`} style={styles.label}>
-                            Choix {lettre}
-                        </label>
-                        <input
-                            id={`choix${lettre}`}
-                            type="text"
-                            name={`choix${lettre}`}
-                            value={formData[`choix${lettre}`]}
-                            onChange={handleChange}
-                            placeholder={`Ex : Réponse ${lettre}`}
-                            style={{
-                                ...styles.input,
-                                borderColor: erreurs[`choix${lettre}`] ? 'red' : '#ccc',
-                            }}
-                        />
-                        {erreurs[`choix${lettre}`] && (
-                            <span style={styles.erreur}>❌ {erreurs[`choix${lettre}`]}</span>
-                        )}
-                    </div>
-                ))}
+                {/* Section : liste des choix dynamiques */}
+                <div style={styles.groupe}>
+                    <label style={styles.label}>Choix de réponses</label>
 
-                {/* Sélection de la bonne réponse */}
+                    {choix.map((c, index) => (
+                        <div key={index} style={styles.ligneChoix}>
+
+                            {/* Numéro du choix */}
+                            <span style={styles.numeroChoix}>{index + 1}.</span>
+
+                            {/* Champ texte du choix */}
+                            <div style={{ flex: 1 }}>
+                                <input
+                                    type="text"
+                                    value={c}
+                                    onChange={(e) => handleChoixChange(index, e.target.value)}
+                                    placeholder={`Choix ${index + 1}`}
+                                    style={{
+                                        ...styles.input,
+                                        width: '100%',
+                                        borderColor: erreurs[`choix${index}`] ? 'red' : '#ccc',
+                                    }}
+                                />
+                                {erreurs[`choix${index}`] && (
+                                    <span style={styles.erreur}>❌ {erreurs[`choix${index}`]}</span>
+                                )}
+                            </div>
+
+                            {/* Bouton supprimer le choix (désactivé si moins de 2 choix) */}
+                            <button
+                                type="button"
+                                onClick={() => supprimerChoix(index)}
+                                disabled={choix.length <= 2}
+                                style={{
+                                    ...styles.boutonSupprimer,
+                                    opacity: choix.length <= 2 ? 0.3 : 1,
+                                    cursor: choix.length <= 2 ? 'not-allowed' : 'pointer',
+                                }}
+                                title="Supprimer ce choix"
+                            >
+                                🗑️
+                            </button>
+
+                        </div>
+                    ))}
+
+                    {/* Bouton pour ajouter un nouveau choix */}
+                    <button
+                        type="button"
+                        onClick={ajouterChoix}
+                        style={styles.boutonAjouterChoix}
+                    >
+                        ＋ Ajouter un choix
+                    </button>
+
+                </div>
+
+                {/* Sélection de la bonne réponse parmi les choix remplis */}
                 <div style={styles.groupe}>
                     <label htmlFor="bonneReponse" style={styles.label}>
                         Bonne réponse
                     </label>
                     <select
                         id="bonneReponse"
-                        name="bonneReponse"
-                        value={formData.bonneReponse}
-                        onChange={handleChange}
+                        value={bonneReponseIndex}
+                        onChange={(e) => {
+                            setBonneReponseIndex(Number(e.target.value))
+                            if (erreurs.bonneReponse) setErreurs({ ...erreurs, bonneReponse: '' })
+                        }}
                         style={{
                             ...styles.input,
                             borderColor: erreurs.bonneReponse ? 'red' : '#ccc',
                         }}
                     >
                         <option value="">-- Sélectionner la bonne réponse --</option>
-                        <option value="A">Choix A</option>
-                        <option value="B">Choix B</option>
-                        <option value="C">Choix C</option>
-                        <option value="D">Choix D</option>
+                        {/* On affiche seulement les choix qui ont du texte */}
+                        {choix.map((c, index) => (
+                            c.trim() !== '' && (
+                                <option key={index} value={index}>
+                                    {index + 1}. {c}
+                                </option>
+                            )
+                        ))}
                     </select>
                     {erreurs.bonneReponse && (
                         <span style={styles.erreur}>❌ {erreurs.bonneReponse}</span>
                     )}
                 </div>
 
-                <button type="submit" style={styles.bouton}>
+                {/* Bouton soumettre */}
+                <button type="submit" style={styles.boutonSoumettre}>
                     ➕ Ajouter la question
                 </button>
 
             </form>
-
         </div>
     )
 }
@@ -209,7 +269,7 @@ const styles = {
     groupe: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.4rem',
+        gap: '0.5rem',
     },
     label: {
         fontWeight: 'bold',
@@ -222,11 +282,35 @@ const styles = {
         fontSize: '1rem',
         outline: 'none',
     },
-    erreur: {
-        color: 'red',
-        fontSize: '0.85rem',
+    ligneChoix: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '0.5rem',
     },
-    bouton: {
+    numeroChoix: {
+        paddingTop: '0.65rem',
+        fontWeight: 'bold',
+        color: '#555',
+        minWidth: '20px',
+    },
+    boutonSupprimer: {
+        background: 'none',
+        border: 'none',
+        fontSize: '1.1rem',
+        paddingTop: '0.4rem',
+    },
+    boutonAjouterChoix: {
+        padding: '0.5rem 1rem',
+        backgroundColor: '#e0e7ff',
+        color: '#4f46e5',
+        border: '1px dashed #4f46e5',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        alignSelf: 'flex-start',
+        marginTop: '0.3rem',
+    },
+    boutonSoumettre: {
         padding: '0.6rem 1.2rem',
         backgroundColor: '#16a34a',
         color: '#fff',
@@ -235,6 +319,10 @@ const styles = {
         cursor: 'pointer',
         fontWeight: 'bold',
         alignSelf: 'flex-start',
+    },
+    erreur: {
+        color: 'red',
+        fontSize: '0.85rem',
     },
 }
 
