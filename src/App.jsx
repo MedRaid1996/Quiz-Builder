@@ -5,6 +5,10 @@ import QuestionForm from './components/QuestionForm'
 import QuestionList from './components/QuestionList'
 import QuizPlayer from './components/QuizPlayer'
 import ScoreBoard from './components/ScoreBoard'
+import QuestionFormRHF from './components/QuestionFormRHF'
+
+
+
 
 function App() {
 
@@ -24,6 +28,9 @@ function App() {
 
   // Vue active : 'create' | 'play' | 'score'
   const [currentView, setCurrentView] = useState('create')
+
+  // true = version react-hook-form, false = version contrôlée classique
+  const [utiliserRHF, setUtiliserRHF] = useState(false)
 
 
   // --- FONCTIONS ---
@@ -105,7 +112,38 @@ function App() {
             quizTitle={quizTitle}
             setQuizTitle={setQuizTitle}
           />
-          <QuestionForm addQuestion={addQuestion} />
+
+          {/* Bouton switch entre les deux versions de formulaire */}
+          <div style={styles.switchContainer}>
+            <span style={styles.switchLabel}>Version du formulaire :</span>
+            <button
+              onClick={() => setUtiliserRHF(false)}
+              style={{
+                ...styles.switchBouton,
+                backgroundColor: !utiliserRHF ? '#4f46e5' : '#f3f4f6',
+                color: !utiliserRHF ? '#fff' : '#333',
+              }}
+            >
+              useState classique
+            </button>
+            <button
+              onClick={() => setUtiliserRHF(true)}
+              style={{
+                ...styles.switchBouton,
+                backgroundColor: utiliserRHF ? '#b45309' : '#f3f4f6',
+                color: utiliserRHF ? '#fff' : '#333',
+              }}
+            >
+              react-hook-form
+            </button>
+          </div>
+
+          {/* Affiche la version sélectionnée */}
+          {utiliserRHF
+            ? <QuestionFormRHF addQuestion={addQuestion} />
+            : <QuestionForm addQuestion={addQuestion} />
+          }
+
           <QuestionList
             questions={questions}
             deleteQuestion={deleteQuestion}
@@ -138,6 +176,29 @@ function App() {
 
     </div>
   )
+}
+
+const styles = {
+  switchContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    marginBottom: '1rem',
+    flexWrap: 'wrap',
+  },
+  switchLabel: {
+    fontSize: '0.9rem',
+    fontWeight: 'bold',
+    color: '#555',
+  },
+  switchBouton: {
+    padding: '0.4rem 1rem',
+    border: '1px solid #ccc',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: '0.85rem',
+  },
 }
 
 export default App
