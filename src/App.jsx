@@ -22,7 +22,7 @@ function App() {
   // Résultat final après correction — { correct, total, percentage }
   const [score, setScore] = useState(null)
 
-  // Vue active : 'create' (création) | 'play' (jeu) | 'score' (résultats)
+  // Vue active : 'create' | 'play' | 'score'
   const [currentView, setCurrentView] = useState('create')
 
 
@@ -32,7 +32,7 @@ function App() {
   const addQuestion = (newQuestion) => {
     const question = {
       ...newQuestion,
-      id: Date.now(), // timestamp comme identifiant unique
+      id: Date.now(),
     }
     setQuestions([...questions, question])
   }
@@ -53,14 +53,21 @@ function App() {
     setCurrentView('score')
   }
 
-  // Remet tout à zéro et retourne à la vue création
+  // Remet tout à zéro et retourne à la vue CRÉATION
   const resetQuiz = () => {
     setUserAnswers({})
     setScore(null)
     setCurrentView('create')
   }
 
-  // Lance le quiz en réinitialisant les réponses et en allant à la vue jeu
+  // Remet seulement les réponses à zéro et retourne à la vue JEU
+  const recommencerQuiz = () => {
+    setUserAnswers({})
+    setScore(null)
+    setCurrentView('play')
+  }
+
+  // Lance le quiz en réinitialisant les réponses
   const startQuiz = () => {
     setUserAnswers({})
     setScore(null)
@@ -74,7 +81,7 @@ function App() {
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
 
       <h1 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-        Quiz Builder
+        🧠 Quiz Builder
       </h1>
 
       {/* Barre de navigation entre les vues */}
@@ -125,6 +132,7 @@ function App() {
           questions={questions}
           userAnswers={userAnswers}
           resetQuiz={resetQuiz}
+          recommencerQuiz={recommencerQuiz}
         />
       )}
 

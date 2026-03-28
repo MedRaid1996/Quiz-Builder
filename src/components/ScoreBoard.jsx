@@ -1,10 +1,11 @@
 // Composant pour afficher le score final et la correction détaillée
 // Props :
-//   score       : objet { correct, total, percentage }
-//   questions   : tableau des questions
-//   userAnswers : objet { id: réponse choisie }
-//   resetQuiz   : fonction pour recommencer
-function ScoreBoard({ score, questions, userAnswers, resetQuiz }) {
+//   score           : objet { correct, total, percentage }
+//   questions       : tableau des questions
+//   userAnswers     : objet { id: réponse choisie }
+//   resetQuiz       : retourne à la vue création
+//   recommencerQuiz : retourne à la vue jeu sans toucher aux questions
+function ScoreBoard({ score, questions, userAnswers, resetQuiz, recommencerQuiz }) {
 
     // --- MESSAGE FINAL selon le pourcentage ---
     const getMessageFinal = () => {
@@ -169,11 +170,19 @@ function ScoreBoard({ score, questions, userAnswers, resetQuiz }) {
                 </div>
             </div>
 
-            {/* --- BOUTON RECOMMENCER --- */}
+            {/* --- BOUTONS D'ACTION --- */}
             <div style={styles.actions}>
-                <button onClick={resetQuiz} style={styles.boutonRecommencer}>
-                    🔄 Recommencer
+
+                {/* Rejouer le MÊME quiz sans toucher aux questions */}
+                <button onClick={recommencerQuiz} style={styles.boutonRecommencer}>
+                    🔄 Rejouer ce quiz
                 </button>
+
+                {/* Retourner à la création et tout réinitialiser */}
+                <button onClick={resetQuiz} style={styles.boutonCreer}>
+                    ✏️ Créer un nouveau quiz
+                </button>
+
             </div>
 
         </div>
@@ -306,14 +315,26 @@ const styles = {
     actions: {
         display: 'flex',
         justifyContent: 'center',
+        gap: '1rem',
         paddingTop: '1rem',
         borderTop: '1px solid #e5e7eb',
+        flexWrap: 'wrap',
     },
     boutonRecommencer: {
         padding: '0.7rem 2rem',
         backgroundColor: '#4f46e5',
         color: '#fff',
         border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        fontSize: '1rem',
+    },
+    boutonCreer: {
+        padding: '0.7rem 2rem',
+        backgroundColor: '#f3f4f6',
+        color: '#333',
+        border: '1px solid #ccc',
         borderRadius: '6px',
         cursor: 'pointer',
         fontWeight: 'bold',
