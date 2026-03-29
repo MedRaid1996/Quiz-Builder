@@ -2,7 +2,6 @@ import { useState } from 'react'
 import useLocalStorage from './hooks/useLocalStorage'
 import QuizForm from './components/QuizForm'
 import QuestionForm from './components/QuestionForm'
-import QuestionFormRHF from './components/QuestionFormRHF'
 import QuestionList from './components/QuestionList'
 import QuizPlayer from './components/QuizPlayer'
 import ScoreBoard from './components/ScoreBoard'
@@ -25,9 +24,6 @@ function App() {
 
   // Vue active : 'create' | 'play' | 'score'
   const [currentView, setCurrentView] = useState('create')
-
-  // Choix de la version du formulaire : false = classique, true = RHF
-  const [utiliserRHF, setUtiliserRHF] = useState(false)
 
 
   // --- FONCTIONS ---
@@ -106,30 +102,11 @@ function App() {
       {/* Vue Création */}
       {currentView === 'create' && (
         <div>
+          {/* QuizForm utilise react-hook-form */}
           <QuizForm quizTitle={quizTitle} setQuizTitle={setQuizTitle} />
 
-          {/* Switch entre les deux versions de formulaire */}
-          <div className="switch-container">
-            <span className="switch-label">Version du formulaire :</span>
-            <button
-              className={`switch-btn ${!utiliserRHF ? 'actif-violet' : ''}`}
-              onClick={() => setUtiliserRHF(false)}
-            >
-              useState classique
-            </button>
-            <button
-              className={`switch-btn ${utiliserRHF ? 'actif-orange' : ''}`}
-              onClick={() => setUtiliserRHF(true)}
-            >
-              react-hook-form
-            </button>
-          </div>
-
-          {/* Formulaire selon la version choisie */}
-          {utiliserRHF
-            ? <QuestionFormRHF addQuestion={addQuestion} />
-            : <QuestionForm addQuestion={addQuestion} />
-          }
+          {/* QuestionForm utilise useState contrôlé */}
+          <QuestionForm addQuestion={addQuestion} />
 
           <QuestionList questions={questions} deleteQuestion={deleteQuestion} />
         </div>
