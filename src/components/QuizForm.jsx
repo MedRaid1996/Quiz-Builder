@@ -1,15 +1,10 @@
 import { useForm } from 'react-hook-form'
+import { useEffect } from 'react'
 
 // Composant formulaire pour saisir le titre du quiz
 // Version react-hook-form (RHF)
-// Props : quizTitle (titre actuel), setQuizTitle (fonction de mise à jour)
 function QuizForm({ quizTitle, setQuizTitle }) {
 
-  // useForm initialise le formulaire avec la valeur actuelle du titre
-  // register     : connecte le champ à RHF
-  // handleSubmit : gère la soumission avec validation automatique
-  // formState    : contient les erreurs et le statut de soumission
-  // reset        : remet le formulaire à zéro
   const {
     register,
     handleSubmit,
@@ -17,9 +12,17 @@ function QuizForm({ quizTitle, setQuizTitle }) {
     reset,
   } = useForm({
     defaultValues: {
-      titre: quizTitle, // on prérempli avec le titre sauvegardé
+      titre: quizTitle,
     },
   })
+
+  // Quand quizTitle devient vide (réinitialisation depuis App),
+  // on remet le champ du formulaire à vide aussi
+  useEffect(() => {
+    if (quizTitle === '') {
+      reset({ titre: '' })
+    }
+  }, [quizTitle, reset])
 
   // Appelée seulement si la validation passe
   const onSubmit = (data) => {
@@ -30,7 +33,6 @@ function QuizForm({ quizTitle, setQuizTitle }) {
     <div className="carte">
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1.2rem' }}>
         <h2 className="section-titre" style={{ margin: 0 }}>📝 Titre du quiz</h2>
-        {/* Badge pour identifier la version RHF */}
         <span className="badge-rhf">react-hook-form</span>
       </div>
 
@@ -41,7 +43,6 @@ function QuizForm({ quizTitle, setQuizTitle }) {
             Nom du quiz
           </label>
 
-          {/* register connecte le champ avec ses règles de validation */}
           <input
             id="titre"
             type="text"
@@ -60,12 +61,10 @@ function QuizForm({ quizTitle, setQuizTitle }) {
             className={`form-input ${errors.titre ? 'erreur' : ''}`}
           />
 
-          {/* Erreur de validation gérée automatiquement par RHF */}
           {errors.titre && (
             <span className="form-erreur">❌ {errors.titre.message}</span>
           )}
 
-          {/* Message de succès après soumission réussie */}
           {isSubmitSuccessful && !errors.titre && (
             <span className="form-succes">✅ Titre enregistré avec succès !</span>
           )}

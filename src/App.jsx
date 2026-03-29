@@ -70,6 +70,19 @@ function App() {
     setCurrentView('play')
   }
 
+  // Efface toutes les données sauvegardées et remet l'app à zéro
+  const reinitialiserTout = () => {
+    if (window.confirm('Es-tu sûr de vouloir tout effacer ?')) {
+      localStorage.removeItem('quizTitle')
+      localStorage.removeItem('questions')
+      setQuizTitle('')
+      setQuestions([])
+      setUserAnswers({})
+      setScore(null)
+      setCurrentView('create')
+    }
+  }
+
 
   // --- RENDU ---
 
@@ -96,6 +109,13 @@ function App() {
           disabled={questions.length === 0}
         >
           ▶️ Jouer
+        </button>
+        <button
+          className="nav-btn"
+          onClick={reinitialiserTout}
+          style={{ background: 'rgba(220,38,38,0.3)', borderColor: 'rgba(220,38,38,0.5)' }}
+        >
+          🗑️ Tout effacer
         </button>
       </nav>
 
