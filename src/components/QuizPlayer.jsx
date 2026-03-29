@@ -1,90 +1,113 @@
 import { useState, useEffect } from 'react'
 import calculateScore from '../utils/scoreCalculator'
 
+// Composant pour jouer au quiz avec minuterie
 function QuizPlayer({ quizTitle, questions, userAnswers, handleAnswer, handleScore, onBack }) {
 
-  const SECONDES_TOTAL = 30 * questions.length
-  const [tempsRestant, setTempsRestant] = useState(SECONDES_TOTAL)
+  const SECONDES_PAR_QUESTION = 30 * questions.length
+  const [tempsRestant, setTempsRestant] = useState(SECONDES_PAR_QUESTION)
   const [tempsEcoule, setTempsEcoule] = useState(false)
 
   useEffect(() => {
     if (tempsRestant <= 0) { setTempsEcoule(true); return }
-    const intervalle = setInterval(() => setTempsRestant(prev => prev - 1), 1000)
+    const intervalle = setInterval(() => setTempsRestant((prev) => prev - 1), 1000)
     return () => clearInterval(intervalle)
   }, [tempsRestant])
 
-  const formaterTemps = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
-  const nombreRepondues = Object.keys(userAnswers).length
-  const progression = Math.round((nombreRepondues / questions.length) * 100)
+  const formaterTemps = (secondes) => {
+    const m = Math.floor(secondes / 60)
+    const s = secondes % 60
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  }
 
-  const handleSubmit = () => handleScore(calculateScore(questions, userAnswers))
+  const nombreRepondues = Object.keys(userAnswers).length
+  const estUrgent = tempsRestant < SECONDES_PAR_QUESTION * 0.2
+
+  const handleSubmit = () => {
+    const scoreFinal = calculateScore(questions, userAnswers)
+    handleScore(scoreFinal)
+  }
 
   return (
     <div className="carte">
 
+      {/* En-tête */}
       <div className="player-entete">
         <div>
-          <div className="player-titre">▶️ {quizTitle || 'Quiz sans titre'}</div>
-          <div className="player-progression">{nombreRepondues} / {questions.length} questions répondues</div>
+          <h2 className="player-titre">▶️ {quizTitle || 'Quiz sans titre'}</h2>
+          <p className="player-progression">{nombreRepondues} / {questions.length} questions répondues</p>
         </div>
-        <div className={`minuterie ${tempsRestant < SECONDES_TOTAL * 0.2 ? 'alerte' : 'ok'}`}>
+        <div className={`minuterie ${estUrgent ? 'urgence' : ''}`}>
           ⏱️ {tempsEcoule ? '00:00' : formaterTemps(tempsRestant)}
         </div>
       </div>
 
-      {/* Barre de progression */}
-      <div className="barre-progression-container">
-        <div className="barre-progression-fill" style={{ width: `${progression}%` }} />
-      </div>
-
+      {/* Alerte temps écoulé */}
       {tempsEcoule && (
-        <div className="alerte-temps">⚠️ Temps écoulé ! Tu peux quand même soumettre tes réponses.</div>
+        <div className="alerte-temps">
+          ⚠️ Temps écoulé ! Tu peux quand même soumettre tes réponses.
+        </div>
       )}
 
-      <div>
+      {/* Liste des questions */}
+      <div className="player-questions">
         {questions.map((question, index) => (
-          <div key={question.id} className={`player-question-carte ${userAnswers[question.id] ? 'repondue' : ''}`}>
+          <div
+            key={question.id}
+            className={`player-carte ${userAnswers[question.id] ? 'repondue' : ''}`}
+          >
             <p className="player-enonce">
-              <span className="player-numero">Q{index + 1}.</span>
+              <span className="player-question-numero">Q{index + 1}.</span>
               {question.texte}
             </p>
 
-            <div>
-              {question.choix.map((choix, i) => (
-                <label key={i} className={`choix-label ${userAnswers[question.id] === choix ? 'selectionne' : ''}`}>
+            <div className="player-choix-container">
+              {question.choix.map((choix, choixIndex) => (
+                <label
+                  key={choixIndex}
+                  className={`player-choix-label ${userAnswers[question.id] === choix ? 'selectionne' : ''}`}
+                >
                   <input
                     type="radio"
                     name={`question-${question.id}`}
                     value={choix}
                     checked={userAnswers[question.id] === choix}
                     onChange={() => handleAnswer(question.id, choix)}
-                    className="choix-radio"
+                    style={{ accentColor: '#7c3aed', cursor: 'pointer' }}
                   />
-                  <span style={{ fontWeight: 700, color: 'var(--violet)', minWidth: '20px' }}>{i + 1}.</span>
+                  <span style={{ fontWeight: 'bold', color: '#9ca3af', minWidth: '20px' }}>
+                    {choixIndex + 1}.
+                  </span>
                   {choix}
                 </label>
               ))}
             </div>
 
-            <div className="statut-reponse">
+            <div className="player-statut">
               {userAnswers[question.id]
                 ? <span className="statut-ok">✅ Répondu</span>
-                : <span className="statut-manquant">⬜ Non répondu</span>
+                : <span className="statut-non">⬜ Non répondu</span>
               }
             </div>
+
           </div>
         ))}
       </div>
 
+      {/* Actions */}
       <div className="player-actions">
-        <button onClick={onBack} className="bouton-secondaire">← Retour</button>
-        <div>
+        <button onClick={onBack} className="btn btn-neutre">← Retour</button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
           {nombreRepondues < questions.length && (
-            <p className="avertissement-reponses">
+            <p className="player-avertissement">
               ⚠️ {questions.length - nombreRepondues} question(s) sans réponse
             </p>
           )}
-          <button onClick={handleSubmit} className="bouton-principal" disabled={nombreRepondues === 0}>
+          <button
+            onClick={handleSubmit}
+            disabled={nombreRepondues === 0}
+            className="btn btn-principal"
+          >
             ✔️ Corriger le quiz
           </button>
         </div>

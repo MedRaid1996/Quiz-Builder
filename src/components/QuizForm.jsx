@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 
+// Formulaire NON CONTRÔLÉ avec useRef pour le titre du quiz
 function QuizForm({ quizTitle, setQuizTitle }) {
 
   const titleRef = useRef(null)
@@ -22,25 +23,25 @@ function QuizForm({ quizTitle, setQuizTitle }) {
     <div className="carte">
       <h2 className="section-titre">📝 Titre du quiz</h2>
 
-      <form onSubmit={handleSubmit}>
-        <div className="champ-groupe">
-          <label htmlFor="titre" className="champ-label">Nom du quiz</label>
+      <form onSubmit={handleSubmit} className="form">
+        <div className="form-groupe">
+          <label htmlFor="titre" className="form-label">Nom du quiz</label>
           <input
             id="titre"
             type="text"
             ref={titleRef}
             defaultValue={quizTitle}
             placeholder="Ex : Quiz JavaScript"
-            className="champ-input"
+            className={`form-input ${feedback?.type === 'erreur' ? 'erreur' : ''}`}
           />
           {feedback && (
-            <div className={`feedback-msg ${feedback.type}`}>
+            <span className={feedback.type === 'erreur' ? 'form-erreur' : 'form-succes'}>
               {feedback.type === 'erreur' ? '❌' : '✅'} {feedback.message}
-            </div>
+            </span>
           )}
         </div>
 
-        <button type="submit" className="bouton-principal">
+        <button type="submit" className="btn btn-principal" style={{ alignSelf: 'flex-start' }}>
           💾 Enregistrer le titre
         </button>
       </form>

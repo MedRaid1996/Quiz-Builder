@@ -2,13 +2,10 @@ import { useState } from 'react'
 import useLocalStorage from './hooks/useLocalStorage'
 import QuizForm from './components/QuizForm'
 import QuestionForm from './components/QuestionForm'
+import QuestionFormRHF from './components/QuestionFormRHF'
 import QuestionList from './components/QuestionList'
 import QuizPlayer from './components/QuizPlayer'
 import ScoreBoard from './components/ScoreBoard'
-import QuestionFormRHF from './components/QuestionFormRHF'
-
-
-
 
 function App() {
 
@@ -20,28 +17,24 @@ function App() {
   // Liste des questions — sauvegardée dans localStorage
   const [questions, setQuestions] = useLocalStorage('questions', [])
 
-  // Réponses du joueur pendant le quiz — { id: 'réponse choisie' }
+  // Réponses du joueur pendant le quiz
   const [userAnswers, setUserAnswers] = useState({})
 
-  // Résultat final après correction — { correct, total, percentage }
+  // Résultat final après correction
   const [score, setScore] = useState(null)
 
   // Vue active : 'create' | 'play' | 'score'
   const [currentView, setCurrentView] = useState('create')
 
-  // true = version react-hook-form, false = version contrôlée classique
+  // Choix de la version du formulaire : false = classique, true = RHF
   const [utiliserRHF, setUtiliserRHF] = useState(false)
 
 
   // --- FONCTIONS ---
 
-  // Ajoute une nouvelle question à la liste avec un id unique
+  // Ajoute une nouvelle question avec un id unique
   const addQuestion = (newQuestion) => {
-    const question = {
-      ...newQuestion,
-      id: Date.now(),
-    }
-    setQuestions([...questions, question])
+    setQuestions([...questions, { ...newQuestion, id: Date.now() }])
   }
 
   // Supprime une question par son id
@@ -49,32 +42,32 @@ function App() {
     setQuestions(questions.filter((q) => q.id !== id))
   }
 
-  // Enregistre la réponse du joueur pour une question donnée
+  // Enregistre la réponse du joueur pour une question
   const handleAnswer = (questionId, answer) => {
     setUserAnswers({ ...userAnswers, [questionId]: answer })
   }
 
-  // Reçoit le score calculé depuis QuizPlayer et affiche la vue score
+  // Reçoit le score et affiche la vue score
   const handleScore = (finalScore) => {
     setScore(finalScore)
     setCurrentView('score')
   }
 
-  // Remet tout à zéro et retourne à la vue CRÉATION
+  // Remet tout à zéro → vue création
   const resetQuiz = () => {
     setUserAnswers({})
     setScore(null)
     setCurrentView('create')
   }
 
-  // Remet seulement les réponses à zéro et retourne à la vue JEU
+  // Remet les réponses à zéro → vue jeu
   const recommencerQuiz = () => {
     setUserAnswers({})
     setScore(null)
     setCurrentView('play')
   }
 
-  // Lance le quiz en réinitialisant les réponses
+  // Lance le quiz
   const startQuiz = () => {
     setUserAnswers({})
     setScore(null)
@@ -87,17 +80,22 @@ function App() {
   return (
     <div className="app-container">
 
-      <div className="app-titre">
-        <h1>🧠 Quiz Builder</h1>
-        <p>Crée, joue et corrige tes questionnaires</p>
+      {/* En-tête */}
+      <div className="app-header">
+        <h1 className="app-titre">🧠 Quiz Builder</h1>
+        <p className="app-sous-titre">Crée et joue à tes propres questionnaires</p>
       </div>
 
-      <nav className="nav-barre">
-        <button className="nav-bouton" onClick={() => setCurrentView('create')}>
+      {/* Navigation */}
+      <nav className="nav">
+        <button
+          className={`nav-btn ${currentView === 'create' ? 'actif' : ''}`}
+          onClick={() => setCurrentView('create')}
+        >
           ✏️ Créer
         </button>
         <button
-          className="nav-bouton"
+          className={`nav-btn ${currentView === 'play' ? 'actif' : ''}`}
           onClick={startQuiz}
           disabled={questions.length === 0}
         >
@@ -105,26 +103,29 @@ function App() {
         </button>
       </nav>
 
+      {/* Vue Création */}
       {currentView === 'create' && (
         <div>
           <QuizForm quizTitle={quizTitle} setQuizTitle={setQuizTitle} />
 
+          {/* Switch entre les deux versions de formulaire */}
           <div className="switch-container">
             <span className="switch-label">Version du formulaire :</span>
             <button
-              className={`switch-bouton ${!utiliserRHF ? 'actif-state' : ''}`}
+              className={`switch-btn ${!utiliserRHF ? 'actif-violet' : ''}`}
               onClick={() => setUtiliserRHF(false)}
             >
               useState classique
             </button>
             <button
-              className={`switch-bouton ${utiliserRHF ? 'actif-rhf' : ''}`}
+              className={`switch-btn ${utiliserRHF ? 'actif-orange' : ''}`}
               onClick={() => setUtiliserRHF(true)}
             >
               react-hook-form
             </button>
           </div>
 
+          {/* Formulaire selon la version choisie */}
           {utiliserRHF
             ? <QuestionFormRHF addQuestion={addQuestion} />
             : <QuestionForm addQuestion={addQuestion} />
@@ -134,6 +135,7 @@ function App() {
         </div>
       )}
 
+      {/* Vue Jeu */}
       {currentView === 'play' && (
         <QuizPlayer
           quizTitle={quizTitle}
@@ -145,6 +147,7 @@ function App() {
         />
       )}
 
+      {/* Vue Score */}
       {currentView === 'score' && (
         <ScoreBoard
           score={score}
@@ -158,6 +161,5 @@ function App() {
     </div>
   )
 }
-
 
 export default App

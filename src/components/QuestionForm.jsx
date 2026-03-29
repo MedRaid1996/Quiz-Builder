@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+// Formulaire CONTRÔLÉ avec useState — version classique
 function QuestionForm({ addQuestion }) {
 
   const [texte, setTexte] = useState('')
@@ -11,7 +12,9 @@ function QuestionForm({ addQuestion }) {
     const nouveauxChoix = [...choix]
     nouveauxChoix[index] = valeur
     setChoix(nouveauxChoix)
-    if (erreurs[`choix${index}`]) setErreurs({ ...erreurs, [`choix${index}`]: '' })
+    if (erreurs[`choix${index}`]) {
+      setErreurs({ ...erreurs, [`choix${index}`]: '' })
+    }
   }
 
   const ajouterChoix = () => setChoix([...choix, ''])
@@ -25,88 +28,116 @@ function QuestionForm({ addQuestion }) {
   }
 
   const validerFormulaire = () => {
-    const e = {}
-    if (texte.trim() === '') e.texte = "L'énoncé est obligatoire."
-    choix.forEach((c, i) => { if (c.trim() === '') e[`choix${i}`] = `Le choix ${i + 1} est obligatoire.` })
-    if (bonneReponseIndex === '') e.bonneReponse = 'Tu dois sélectionner la bonne réponse.'
-    return e
+    const nouvellesErreurs = {}
+    if (texte.trim() === '') nouvellesErreurs.texte = 'L\'énoncé est obligatoire.'
+    choix.forEach((c, i) => {
+      if (c.trim() === '') nouvellesErreurs[`choix${i}`] = `Le choix ${i + 1} est obligatoire.`
+    })
+    if (bonneReponseIndex === '') nouvellesErreurs.bonneReponse = 'Tu dois sélectionner la bonne réponse.'
+    return nouvellesErreurs
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
     const erreursDetectees = validerFormulaire()
-    if (Object.keys(erreursDetectees).length > 0) { setErreurs(erreursDetectees); return }
-
+    if (Object.keys(erreursDetectees).length > 0) {
+      setErreurs(erreursDetectees)
+      return
+    }
     addQuestion({
       texte: texte.trim(),
-      choix: choix.map(c => c.trim()),
+      choix: choix.map((c) => c.trim()),
       bonneReponse: choix[bonneReponseIndex].trim(),
     })
-
-    setTexte(''); setChoix(['', '']); setBonneReponseIndex(''); setErreurs({})
+    setTexte('')
+    setChoix(['', ''])
+    setBonneReponseIndex('')
+    setErreurs({})
   }
 
   return (
     <div className="carte">
       <h2 className="section-titre">➕ Ajouter une question</h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="form">
 
-        <div className="champ-groupe">
-          <label htmlFor="texte" className="champ-label">Énoncé de la question</label>
+        {/* Énoncé */}
+        <div className="form-groupe">
+          <label htmlFor="texte" className="form-label">Énoncé de la question</label>
           <input
-            id="texte" type="text" value={texte}
-            onChange={e => { setTexte(e.target.value); if (erreurs.texte) setErreurs({ ...erreurs, texte: '' }) }}
+            id="texte"
+            type="text"
+            value={texte}
+            onChange={(e) => {
+              setTexte(e.target.value)
+              if (erreurs.texte) setErreurs({ ...erreurs, texte: '' })
+            }}
             placeholder="Ex : Quel hook permet de gérer l'état ?"
-            className={`champ-input ${erreurs.texte ? 'erreur' : ''}`}
+            className={`form-input ${erreurs.texte ? 'erreur' : ''}`}
           />
-          {erreurs.texte && <span className="champ-erreur">❌ {erreurs.texte}</span>}
+          {erreurs.texte && <span className="form-erreur">❌ {erreurs.texte}</span>}
         </div>
 
-        <div className="champ-groupe">
-          <label className="champ-label">Choix de réponses</label>
-
+        {/* Choix dynamiques */}
+        <div className="form-groupe">
+          <label className="form-label">Choix de réponses</label>
           {choix.map((c, index) => (
             <div key={index} className="ligne-choix">
-              <span className="numero-choix">{index + 1}.</span>
+              <span className="choix-numero">{index + 1}.</span>
               <div style={{ flex: 1 }}>
                 <input
-                  type="text" value={c}
-                  onChange={e => handleChoixChange(index, e.target.value)}
+                  type="text"
+                  value={c}
+                  onChange={(e) => handleChoixChange(index, e.target.value)}
                   placeholder={`Choix ${index + 1}`}
-                  className={`champ-input ${erreurs[`choix${index}`] ? 'erreur' : ''}`}
+                  className={`form-input ${erreurs[`choix${index}`] ? 'erreur' : ''}`}
                 />
-                {erreurs[`choix${index}`] && <span className="champ-erreur">❌ {erreurs[`choix${index}`]}</span>}
+                {erreurs[`choix${index}`] && (
+                  <span className="form-erreur">❌ {erreurs[`choix${index}`]}</span>
+                )}
               </div>
               <button
                 type="button"
                 onClick={() => supprimerChoix(index)}
                 disabled={choix.length <= 2}
-                className="bouton-supprimer-choix"
+                className="btn-suppr-choix"
                 title="Supprimer ce choix"
-              >🗑️</button>
+              >
+                🗑️
+              </button>
             </div>
           ))}
-
-          <button type="button" onClick={ajouterChoix} className="bouton-ajouter-choix">
+          <button type="button" onClick={ajouterChoix} className="btn-ajouter-choix">
             ＋ Ajouter un choix
           </button>
         </div>
 
-        <div className="champ-groupe">
-          <label htmlFor="bonneReponse" className="champ-label">Bonne réponse</label>
+        {/* Bonne réponse */}
+        <div className="form-groupe">
+          <label htmlFor="bonneReponse" className="form-label">Bonne réponse</label>
           <select
-            id="bonneReponse" value={bonneReponseIndex}
-            onChange={e => { setBonneReponseIndex(Number(e.target.value)); if (erreurs.bonneReponse) setErreurs({ ...erreurs, bonneReponse: '' }) }}
-            className={`champ-select ${erreurs.bonneReponse ? 'erreur' : ''}`}
+            id="bonneReponse"
+            value={bonneReponseIndex}
+            onChange={(e) => {
+              setBonneReponseIndex(Number(e.target.value))
+              if (erreurs.bonneReponse) setErreurs({ ...erreurs, bonneReponse: '' })
+            }}
+            className={`form-select ${erreurs.bonneReponse ? 'erreur' : ''}`}
           >
             <option value="">-- Sélectionner la bonne réponse --</option>
-            {choix.map((c, i) => c.trim() !== '' && <option key={i} value={i}>{i + 1}. {c}</option>)}
+            {choix.map((c, index) => (
+              c.trim() !== '' && (
+                <option key={index} value={index}>{index + 1}. {c}</option>
+              )
+            ))}
           </select>
-          {erreurs.bonneReponse && <span className="champ-erreur">❌ {erreurs.bonneReponse}</span>}
+          {erreurs.bonneReponse && <span className="form-erreur">❌ {erreurs.bonneReponse}</span>}
         </div>
 
-        <button type="submit" className="bouton-succes">➕ Ajouter la question</button>
+        <button type="submit" className="btn btn-succes" style={{ alignSelf: 'flex-start' }}>
+          ➕ Ajouter la question
+        </button>
+
       </form>
     </div>
   )
