@@ -1,28 +1,41 @@
 import { useState, useEffect } from 'react'
 import calculateScore from '../utils/scoreCalculator'
 
-// Composant pour jouer au quiz avec minuterie
+// Composant qui permet à l'utilisateur de répondre au quiz avec une minuterie
 function QuizPlayer({ quizTitle, questions, userAnswers, handleAnswer, handleScore, onBack }) {
 
+  // Temps total accordé selon le nombre de questions
   const SECONDES_PAR_QUESTION = 30 * questions.length
+
+  // État pour le temps restant
   const [tempsRestant, setTempsRestant] = useState(SECONDES_PAR_QUESTION)
+
+  // État pour savoir si le temps est terminé
   const [tempsEcoule, setTempsEcoule] = useState(false)
 
+  // Gère le compte à rebours du quiz
   useEffect(() => {
     if (tempsRestant <= 0) { setTempsEcoule(true); return }
+
     const intervalle = setInterval(() => setTempsRestant((prev) => prev - 1), 1000)
+
     return () => clearInterval(intervalle)
   }, [tempsRestant])
 
+  // Transforme les secondes en format mm:ss
   const formaterTemps = (secondes) => {
     const m = Math.floor(secondes / 60)
     const s = secondes % 60
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
   }
 
+  // Nombre de questions auxquelles l'utilisateur a déjà répondu
   const nombreRepondues = Object.keys(userAnswers).length
+
+  // Sert à changer le style de la minuterie quand il reste peu de temps
   const estUrgent = tempsRestant < SECONDES_PAR_QUESTION * 0.2
 
+  // Calcule le score final puis l'envoie au composant parent
   const handleSubmit = () => {
     const scoreFinal = calculateScore(questions, userAnswers)
     handleScore(scoreFinal)
@@ -31,7 +44,7 @@ function QuizPlayer({ quizTitle, questions, userAnswers, handleAnswer, handleSco
   return (
     <div className="carte">
 
-      {/* En-tête */}
+      {/* Partie du haut : titre, progression et temps restant */}
       <div className="player-entete">
         <div>
           <h2 className="player-titre">▶️ {quizTitle || 'Quiz sans titre'}</h2>
@@ -42,14 +55,14 @@ function QuizPlayer({ quizTitle, questions, userAnswers, handleAnswer, handleSco
         </div>
       </div>
 
-      {/* Alerte temps écoulé */}
+      {/* Message affiché quand le temps est terminé */}
       {tempsEcoule && (
         <div className="alerte-temps">
           ⚠️ Temps écoulé ! Tu peux quand même soumettre tes réponses.
         </div>
       )}
 
-      {/* Liste des questions */}
+      {/* Affichage de toutes les questions du quiz */}
       <div className="player-questions">
         {questions.map((question, index) => (
           <div
@@ -61,6 +74,7 @@ function QuizPlayer({ quizTitle, questions, userAnswers, handleAnswer, handleSco
               {question.texte}
             </p>
 
+            {/* Liste des choix possibles pour cette question */}
             <div className="player-choix-container">
               {question.choix.map((choix, choixIndex) => (
                 <label
@@ -83,6 +97,7 @@ function QuizPlayer({ quizTitle, questions, userAnswers, handleAnswer, handleSco
               ))}
             </div>
 
+            {/* Indique si la question a déjà reçu une réponse */}
             <div className="player-statut">
               {userAnswers[question.id]
                 ? <span className="statut-ok">✅ Répondu</span>
@@ -94,7 +109,7 @@ function QuizPlayer({ quizTitle, questions, userAnswers, handleAnswer, handleSco
         ))}
       </div>
 
-      {/* Actions */}
+      {/* Boutons d'action en bas */}
       <div className="player-actions">
         <button onClick={onBack} className="btn btn-neutre">← Retour</button>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>

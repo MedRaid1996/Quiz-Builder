@@ -1,10 +1,10 @@
 import { useForm } from 'react-hook-form'
 import { useEffect } from 'react'
 
-// Composant formulaire pour saisir le titre du quiz
-// Version react-hook-form (RHF)
+// Composant pour gérer le titre du quiz avec react-hook-form
 function QuizForm({ quizTitle, setQuizTitle }) {
 
+  // Initialisation du formulaire avec la valeur actuelle du titre
   const {
     register,
     handleSubmit,
@@ -16,16 +16,17 @@ function QuizForm({ quizTitle, setQuizTitle }) {
     },
   })
 
-  // Quand quizTitle devient vide (réinitialisation depuis App),
-  // on remet le champ du formulaire à vide aussi
+  // Si le titre est vidé depuis le parent (ex: reset global),
+  // on met aussi à jour le champ du formulaire
   useEffect(() => {
     if (quizTitle === '') {
       reset({ titre: '' })
     }
   }, [quizTitle, reset])
 
-  // Appelée seulement si la validation passe
+  // Fonction appelée lorsque le formulaire est valide
   const onSubmit = (data) => {
+    // On enregistre le titre sans les espaces inutiles
     setQuizTitle(data.titre.trim())
   }
 
@@ -61,15 +62,18 @@ function QuizForm({ quizTitle, setQuizTitle }) {
             className={`form-input ${errors.titre ? 'erreur' : ''}`}
           />
 
+          {/* Affiche l'erreur si le champ n'est pas valide */}
           {errors.titre && (
             <span className="form-erreur">❌ {errors.titre.message}</span>
           )}
 
+          {/* Message de succès après une soumission valide */}
           {isSubmitSuccessful && !errors.titre && (
             <span className="form-succes">✅ Titre enregistré avec succès !</span>
           )}
         </div>
 
+        {/* Bouton pour enregistrer le titre */}
         <button
           type="submit"
           className="btn btn-principal"
@@ -80,7 +84,7 @@ function QuizForm({ quizTitle, setQuizTitle }) {
 
       </form>
 
-      {/* Affiche le titre actuel s'il est défini */}
+      {/* Affiche le titre actuel si un titre a été défini */}
       {quizTitle !== '' && (
         <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#6b7280' }}>
           Titre actuel : <strong style={{ color: '#7c3aed' }}>{quizTitle}</strong>

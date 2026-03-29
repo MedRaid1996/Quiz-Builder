@@ -1,6 +1,7 @@
-// Affichage de la liste des questions créées
+// Composant qui affiche toutes les questions ajoutées
 function QuestionList({ questions, deleteQuestion }) {
 
+  // Si aucune question n'existe encore, on affiche un message vide
   if (questions.length === 0) {
     return (
       <div className="carte">
@@ -23,6 +24,8 @@ function QuestionList({ questions, deleteQuestion }) {
 
             <div className="question-carte-entete">
               <span className="question-numero">Question {index + 1}</span>
+
+              {/* Bouton pour supprimer la question */}
               <button
                 onClick={() => deleteQuestion(question.id)}
                 className="btn btn-danger"
@@ -31,8 +34,10 @@ function QuestionList({ questions, deleteQuestion }) {
               </button>
             </div>
 
+            {/* Affiche l'énoncé de la question */}
             <p className="question-enonce">{question.texte}</p>
 
+            {/* Affiche tous les choix de réponse */}
             <ul className="choix-liste">
               {question.choix.map((choix, choixIndex) => (
                 <li
@@ -41,6 +46,8 @@ function QuestionList({ questions, deleteQuestion }) {
                 >
                   <span className="choix-item-numero">{choixIndex + 1}.</span>
                   <span>{choix}</span>
+
+                  {/* Indique visuellement la bonne réponse */}
                   {choix === question.bonneReponse && (
                     <span className="bonne-reponse-tag">✅ Bonne réponse</span>
                   )}

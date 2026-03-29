@@ -1,20 +1,25 @@
-// Fonction utilitaire qui calcule le score final du joueur
-// questions : tableau des questions, userAnswers : objet { id: réponse choisie }
+// Fonction qui calcule le score du joueur à la fin du quiz
+// questions : liste des questions
+// userAnswers : réponses choisies par l'utilisateur (clé = id de la question)
 function calculateScore(questions, userAnswers) {
+
+    // Compteur des bonnes réponses
     let correct = 0
 
-    // On compare chaque réponse du joueur à la bonne réponse
+    // Parcourt toutes les questions pour vérifier les réponses
     questions.forEach((question) => {
+
+        // Si la réponse de l'utilisateur est correcte, on incrémente
         if (userAnswers[question.id] === question.bonneReponse) {
             correct++
         }
     })
 
-    // On retourne le nombre correct, le total et le pourcentage
+    // Retourne les résultats du quiz
     return {
-        correct,
-        total: questions.length,
-        percentage: Math.round((correct / questions.length) * 100),
+        correct, // nombre de bonnes réponses
+        total: questions.length, // nombre total de questions
+        percentage: Math.round((correct / questions.length) * 100), // pourcentage arrondi
     }
 }
 

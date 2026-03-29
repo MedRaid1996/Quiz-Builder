@@ -1,8 +1,9 @@
 import { useForm, useFieldArray } from 'react-hook-form'
 
-// Formulaire avec react-hook-form — version bonus
+// Composant de formulaire pour ajouter une question avec react-hook-form
 function QuestionFormRHF({ addQuestion }) {
 
+  // Initialisation du formulaire avec les valeurs par défaut
   const { register, handleSubmit, formState: { errors }, watch, control, reset } = useForm({
     defaultValues: {
       texte: '',
@@ -11,13 +12,24 @@ function QuestionFormRHF({ addQuestion }) {
     },
   })
 
+  // Permet de gérer dynamiquement le tableau des choix
   const { fields, append, remove } = useFieldArray({ control, name: 'choix' })
+
+  // Permet de surveiller les valeurs actuelles des choix
   const choixValues = watch('choix')
 
+  // Fonction appelée lors de la soumission du formulaire
   const onSubmit = (data) => {
+    // Récupère les choix non vides après suppression des espaces inutiles
     const choixFiltres = data.choix.map((c) => c.valeur.trim()).filter((c) => c !== '')
+
+    // Récupère le texte de la bonne réponse choisie
     const bonneReponseTexte = data.choix[data.bonneReponse]?.valeur.trim()
+
+    // Envoie la nouvelle question au composant parent
     addQuestion({ texte: data.texte.trim(), choix: choixFiltres, bonneReponse: bonneReponseTexte })
+
+    // Réinitialise le formulaire après l'ajout
     reset({ texte: '', choix: [{ valeur: '' }, { valeur: '' }], bonneReponse: '' })
   }
 
@@ -30,7 +42,7 @@ function QuestionFormRHF({ addQuestion }) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="form">
 
-        {/* Énoncé */}
+        {/* Champ pour écrire l'énoncé de la question */}
         <div className="form-groupe">
           <label htmlFor="texte" className="form-label">Énoncé de la question</label>
           <input
@@ -46,7 +58,7 @@ function QuestionFormRHF({ addQuestion }) {
           {errors.texte && <span className="form-erreur">❌ {errors.texte.message}</span>}
         </div>
 
-        {/* Choix dynamiques */}
+        {/* Partie qui affiche tous les choix de réponse */}
         <div className="form-groupe">
           <label className="form-label">Choix de réponses</label>
           {fields.map((field, index) => (
@@ -65,6 +77,8 @@ function QuestionFormRHF({ addQuestion }) {
                   <span className="form-erreur">❌ {errors.choix[index].valeur.message}</span>
                 )}
               </div>
+
+              {/* Bouton pour supprimer un choix */}
               <button
                 type="button"
                 onClick={() => remove(index)}
@@ -75,12 +89,14 @@ function QuestionFormRHF({ addQuestion }) {
               </button>
             </div>
           ))}
+
+          {/* Bouton pour ajouter un nouveau choix */}
           <button type="button" onClick={() => append({ valeur: '' })} className="btn-ajouter-choix">
             ＋ Ajouter un choix
           </button>
         </div>
 
-        {/* Bonne réponse */}
+        {/* Liste déroulante pour choisir la bonne réponse */}
         <div className="form-groupe">
           <label htmlFor="bonneReponse" className="form-label">Bonne réponse</label>
           <select
@@ -98,6 +114,7 @@ function QuestionFormRHF({ addQuestion }) {
           {errors.bonneReponse && <span className="form-erreur">❌ {errors.bonneReponse.message}</span>}
         </div>
 
+        {/* Bouton pour valider et ajouter la question */}
         <button type="submit" className="btn btn-rhf" style={{ alignSelf: 'flex-start' }}>
           ➕ Ajouter la question
         </button>

@@ -10,67 +10,67 @@ function App() {
 
   // --- STATE GLOBAL ---
 
-  // Titre du quiz — sauvegardé dans localStorage
+  // Titre du quiz (sauvegardé dans le localStorage)
   const [quizTitle, setQuizTitle] = useLocalStorage('quizTitle', '')
 
-  // Liste des questions — sauvegardée dans localStorage
+  // Liste des questions (aussi sauvegardée dans le localStorage)
   const [questions, setQuestions] = useLocalStorage('questions', [])
 
-  // Réponses du joueur pendant le quiz
+  // Stocke les réponses choisies par l'utilisateur pendant le quiz
   const [userAnswers, setUserAnswers] = useState({})
 
-  // Résultat final après correction
+  // Contient le score final après correction
   const [score, setScore] = useState(null)
 
-  // Vue active : 'create' | 'play' | 'score'
+  // Permet de savoir quelle vue afficher (création, jeu ou score)
   const [currentView, setCurrentView] = useState('create')
 
 
   // --- FONCTIONS ---
 
-  // Ajoute une nouvelle question avec un id unique
+  // Ajoute une nouvelle question avec un identifiant unique
   const addQuestion = (newQuestion) => {
     setQuestions([...questions, { ...newQuestion, id: Date.now() }])
   }
 
-  // Supprime une question par son id
+  // Supprime une question en utilisant son id
   const deleteQuestion = (id) => {
     setQuestions(questions.filter((q) => q.id !== id))
   }
 
-  // Enregistre la réponse du joueur pour une question
+  // Enregistre la réponse de l'utilisateur pour une question donnée
   const handleAnswer = (questionId, answer) => {
     setUserAnswers({ ...userAnswers, [questionId]: answer })
   }
 
-  // Reçoit le score et affiche la vue score
+  // Reçoit le score calculé et change la vue vers l'écran de résultat
   const handleScore = (finalScore) => {
     setScore(finalScore)
     setCurrentView('score')
   }
 
-  // Remet tout à zéro → vue création
+  // Réinitialise le quiz et retourne à la vue de création
   const resetQuiz = () => {
     setUserAnswers({})
     setScore(null)
     setCurrentView('create')
   }
 
-  // Remet les réponses à zéro → vue jeu
+  // Permet de rejouer le quiz sans supprimer les questions
   const recommencerQuiz = () => {
     setUserAnswers({})
     setScore(null)
     setCurrentView('play')
   }
 
-  // Lance le quiz
+  // Lance le quiz depuis le début
   const startQuiz = () => {
     setUserAnswers({})
     setScore(null)
     setCurrentView('play')
   }
 
-  // Efface toutes les données sauvegardées et remet l'app à zéro
+  // Supprime toutes les données sauvegardées et remet l'application à zéro
   const reinitialiserTout = () => {
     if (window.confirm('Es-tu sûr de vouloir tout effacer ?')) {
       localStorage.removeItem('quizTitle')
@@ -89,13 +89,13 @@ function App() {
   return (
     <div className="app-container">
 
-      {/* En-tête */}
+      {/* En-tête de l'application */}
       <div className="app-header">
         <h1 className="app-titre">🧠 Quiz Builder</h1>
         <p className="app-sous-titre">Crée et joue à tes propres questionnaires</p>
       </div>
 
-      {/* Navigation */}
+      {/* Menu de navigation */}
       <nav className="nav">
         <button
           className={`nav-btn ${currentView === 'create' ? 'actif' : ''}`}
@@ -103,6 +103,8 @@ function App() {
         >
           ✏️ Créer
         </button>
+
+        {/* Bouton pour lancer le quiz (désactivé s'il n'y a pas de questions) */}
         <button
           className={`nav-btn ${currentView === 'play' ? 'actif' : ''}`}
           onClick={startQuiz}
@@ -110,6 +112,8 @@ function App() {
         >
           ▶️ Jouer
         </button>
+
+        {/* Bouton pour tout supprimer */}
         <button
           className="nav-btn"
           onClick={reinitialiserTout}
@@ -119,20 +123,21 @@ function App() {
         </button>
       </nav>
 
-      {/* Vue Création */}
+      {/* Vue de création du quiz */}
       {currentView === 'create' && (
         <div>
-          {/* QuizForm utilise react-hook-form */}
+          {/* Formulaire du titre (react-hook-form) */}
           <QuizForm quizTitle={quizTitle} setQuizTitle={setQuizTitle} />
 
-          {/* QuestionForm utilise useState contrôlé */}
+          {/* Formulaire des questions (useState classique) */}
           <QuestionForm addQuestion={addQuestion} />
 
+          {/* Liste des questions créées */}
           <QuestionList questions={questions} deleteQuestion={deleteQuestion} />
         </div>
       )}
 
-      {/* Vue Jeu */}
+      {/* Vue de jeu */}
       {currentView === 'play' && (
         <QuizPlayer
           quizTitle={quizTitle}
@@ -144,7 +149,7 @@ function App() {
         />
       )}
 
-      {/* Vue Score */}
+      {/* Vue des résultats */}
       {currentView === 'score' && (
         <ScoreBoard
           score={score}
